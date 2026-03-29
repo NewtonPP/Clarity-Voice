@@ -1,5 +1,6 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useActionState } from "react";
 import { FaMicrophone, FaStop } from "react-icons/fa";
+import { ProcessingDashboard } from "./ProcessingDashboard";
 
 export const CaptureDashboard = () => {
   const [isRecording, setIsRecording] = useState(false);
@@ -7,6 +8,12 @@ export const CaptureDashboard = () => {
   const [audioBlob, setAudioBlob] = useState(null);
   const [textInput, setTextInput] = useState("");
   const mediaRecorderRef = useRef(null);
+  const [isUploaded, setIsUploaded] = useState(false)
+
+  const [tasks, setTasks] = useState([])
+  const [suggestedBreakdownCategories, setSuggestedBreakdownCategories] = useState([])
+  const [followUpQuestion, setFollowUpQuestion] = useState("");
+
 
   const StartRecording = async () => {
     try {
@@ -61,6 +68,11 @@ export const CaptureDashboard = () => {
       });
 
       const data = await res.json();
+      setTasks(data.tasks);
+      setSuggestedBreakdownCategories(data.suggested_breakdown_categories);
+      setFollowUpQuestion(data.follow_up_question);
+
+
       console.log("Response:", data);
     } catch (err) {
       console.error("Upload failed:", err);
@@ -74,6 +86,8 @@ export const CaptureDashboard = () => {
   };
 
   return (
+    <>
+    {isUploading ? <ProcessingDashboard tasks = {tasks} suggestedBreakdownCategories = {suggestedBreakdownCategories} followUpQuestion = {followUpQuestion}/> ?
     <div className="h-screen w-full bg-[#F5F7F8] flex flex-col items-center px-6 py-10">
       {/* Header */}
       <div className="text-center mb-12">
@@ -106,15 +120,11 @@ export const CaptureDashboard = () => {
           <p className="text-sm text-gray-300 text-center mt-2">
             Speak freely. We'll transcribe and organize your thoughts.
           </p>
+            
 
-          {isUploading && (
-            <p className="text-xs text-amber-300 mt-3">
-              Processing your audio...
-            </p>
-          )}
+          
         </div>
 
-        {/* Text Card */}
         <div className="bg-white rounded-2xl p-6 w-80 shadow-md flex flex-col">
           <p className="font-semibold text-gray-800 mb-3">Text Stream</p>
 
@@ -134,6 +144,8 @@ export const CaptureDashboard = () => {
           </button>
         </div>
       </div>
-    </div>
+    </div>:<div></div>:""
+}
+</>
   );
 };
